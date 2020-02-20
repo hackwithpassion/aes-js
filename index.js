@@ -294,7 +294,10 @@
             throw new Error('invalid plaintext size (must be 16 bytes)');
         }
 
-        var rounds = this._Ke.length - 1;
+        // hackwithpassion edit
+        var rounds = GLOBAL_CURRENT_ROUND
+        // end hackwithpassion edit
+
         var a = [0, 0, 0, 0];
 
         // convert plaintext to (ints ^ key)
@@ -315,6 +318,17 @@
             t = a.slice();
         }
 
+        // hackwithpassion edit
+        if (GLOBAL_CURRENT_ROUND != GLOBAL_TOTAL_ROUNDS) {
+            return [
+                ...toBytesInt32(t[0]),
+                ...toBytesInt32(t[1]),
+                ...toBytesInt32(t[2]),
+                ...toBytesInt32(t[3]),
+            ]
+        }
+        // end hackwithpassion edit
+
         // the last round is special
         var result = createArray(16), tt;
         for (var i = 0; i < 4; i++) {
@@ -327,6 +341,19 @@
 
         return result;
     }
+
+    // hackwithpassion edit
+    function toBytesInt32(num) {
+        // https://stackoverflow.com/questions/15761790
+        var arr = new Uint8Array([
+            (num & 0xff000000) >> 24,
+            (num & 0x00ff0000) >> 16,
+            (num & 0x0000ff00) >> 8,
+            (num & 0x000000ff)
+       ])
+       return arr 
+    }
+    // end hackwithpassion edit
 
     AES.prototype.decrypt = function(ciphertext) {
         if (ciphertext.length != 16) {
